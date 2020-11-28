@@ -7,17 +7,38 @@ import datetime
 import os
 import pyrebase
 from ndviFunctions import NDVICalc, DVICalc
+import firebase_admin
+from firebase_admin import credentials
+from firebase_admin import firestore
+from firebase_admin import storage
 
-config{
 
-
+#firebase storage 
+config = {
+    "storageBucket": "acreeye.appspot.com"
 }
-firebase = pyrebase.initialize_app(config)
-storage = firebase.storage()
 
-path_on_cloud = "images/example.jpg"
-path_local = "/screenshots/example.jpg"
-storage.child(path_on_cloud).put(path_local)
+
+# Use the application default credentials
+cred = credentials.Certificate('./acreeye-key.json')
+firebase_admin.initialize_app(cred, config)
+
+bucket = storage.bucket()
+#print(bucket)
+fileName = "./screenshots/example.jpg"
+blob = bucket.blob(fileName)
+blob.upload_from_filename(fileName)
+
+#db = firestore.client()
+
+
+
+# firebase = pyrebase.initialize_app(config)
+# storage = firebase.storage()
+
+# path_on_cloud = "images/example.jpg"
+# path_local = "/screenshots/example.jpg"
+# storage.child(path_on_cloud).put(path_local)
 
 
 cv2.namedWindow("preview NDVI")
@@ -57,7 +78,7 @@ while rval:
         break
     elif key == ord('p'): #p for printscreen
         
-        path = 'C:/Users/ruchi/Desktop/CapstoneImageProcessing/NDVIcodes/screenshots'
+        path = './screenshots'
 
         curtime = datetime.datetime.now()
         formattedTime = curtime.strftime("%Y%m%d-%H-%M-%S.jpg")
@@ -68,5 +89,26 @@ while rval:
 # When everything done, release the capture
 vc.release()
 cv2.destroyAllWindows()
+
+
+    #uploading to the cloud 
+# def upload_blob(bucket_name, source_file_name, destination_blob_name):
+#     #"""Uploads a file to the bucket."""
+    
+#     bucket_name = config.storageBucket
+#     source_file_name = "example.jpg"
+#     destination_blob_name = "storage-object-name"
+
+#     storage_client = storage.Client()
+#     bucket = storage_client.bucket(bucket_name)
+#     blob = bucket.blob(destination_blob_name)
+
+#     blob.upload_from_filename(source_file_name) 
+
+#     print(
+#         "File {} uploaded to {}.".format(
+#             source_file_name, destination_blob_name
+#         )
+#     )
 
 
