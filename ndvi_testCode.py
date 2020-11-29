@@ -5,40 +5,39 @@ import numpy as np #arrays and math
 import cv2 #opencv library
 import datetime
 import os
-import pyrebase
+# import pyrebase
 from ndviFunctions import NDVICalc, DVICalc
-import firebase_admin
-from firebase_admin import credentials
-from firebase_admin import firestore
-from firebase_admin import storage
+import pyrebase
 
 
 #firebase storage 
 config = {
-    "storageBucket": "acreeye.appspot.com"
+  "apiKey": "AIzaSyB-LpbpCA68MLiIgzHcbGqgcMIcEtCyECY",
+  "authDomain": "acreeye.firebaseapp.com",
+  "databaseURL": "https://acreeye.firebaseio.com",
+  "projectId": "acreeye",
+  "storageBucket": "acreeye.appspot.com",
+  "messagingSenderId": "1031473176901",
+  "appId": "1:1031473176901:web:7dcc7cb46541ad39215e2c",
+  "measurementId": "G-5DFT5MZQ1D"
 }
 
+firebase = pyrebase.initialize_app(config)
 
-# Use the application default credentials
-cred = credentials.Certificate('./acreeye-key.json')
-firebase_admin.initialize_app(cred, config)
+auth = firebase.auth()
+user = auth.sign_in_with_email_and_password("test@gmail.com", "adil1234")
 
-bucket = storage.bucket()
-#print(bucket)
-fileName = "./screenshots/example.jpg"
-blob = bucket.blob(fileName)
-blob.upload_from_filename(fileName)
+storage = firebase.storage()
+db = firebase.database()
 
-#db = firestore.client()
+path_on_cloud = 'screenshots/example3.jpg'
+path_local = 'example.jpg'
 
+imageUrl = storage.child(path_on_cloud).get_url(None)
 
-
-# firebase = pyrebase.initialize_app(config)
-# storage = firebase.storage()
-
-# path_on_cloud = "images/example.jpg"
-# path_local = "/screenshots/example.jpg"
-# storage.child(path_on_cloud).put(path_local)
+# 28-11-2020
+data = {"imageUrl": imageUrl}
+db.child("data").child('28-11-2020').child('images').push(data)
 
 
 cv2.namedWindow("preview NDVI")
@@ -110,5 +109,3 @@ cv2.destroyAllWindows()
 #             source_file_name, destination_blob_name
 #         )
 #     )
-
-
