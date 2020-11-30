@@ -57,10 +57,12 @@ def upload_image(storage_location):
     #uploading image url from storage to database
     print("adding to database...")
     imageUrl = storage.child(path_on_cloud).get_url(None)
-    doc_ref = db1.collection(u'data').document(u'NDVI')
-    doc_ref.set({
-    u'screenshot': (str(imageUrl))
-    }, merge=True)
+    doc_ref = db1.collection('data').document('NDVI').collection('images').add({
+    'screenshot': (str(imageUrl))
+
+    })
+
+
 
 
 # 28-11-2020
