@@ -8,8 +8,11 @@ import os
 # import pyrebase
 from ndviFunctions import NDVICalc, DVICalc
 import pyrebase
+import firebase_admin
+from firebase_admin import credentials 
+from firebase_admin import firestore
 
-
+##########################################################################################
 #firebase storage 
 config = {
   "apiKey": "AIzaSyB-LpbpCA68MLiIgzHcbGqgcMIcEtCyECY",
@@ -23,22 +26,47 @@ config = {
 }
 
 firebase = pyrebase.initialize_app(config)
-
 auth = firebase.auth()
 user = auth.sign_in_with_email_and_password("test@gmail.com", "adil1234")
-
 storage = firebase.storage()
 db = firebase.database()
+#uploading image to firebase database
+#test = db.child("data").child('25-11-2020').child('Images').push(data)
+cred = credentials.Certificate('./acreeye-firebase-adminsdk.json')
+default_app = firebase_admin.initialize_app(cred)
+db1 = firestore.client()
 
-path_on_cloud = 'screenshots/example3.jpg'
-path_local = 'example.jpg'
+#response = getQuote()
+#quote = response.body['quote']
+#author = response.body['author']
 
-imageUrl = storage.child(path_on_cloud).get_url(None)
+
+
+
+
+#Upload the image taken from the camera to the cloud firebase 
+def upload_image(storage_location):
+    
+    #uploading image to the firebase storage 
+    print("Uploading Image to storage...")
+    #path_on_cloud = 'screenshots/example4.jpg'
+    path_on_cloud = 'screenshots/' + storage_location
+    path_local = './screenshots/' + storage_location
+    storage.child(path_on_cloud).put(path_local)
+
+    #uploading image url from storage to database
+    print("adding to database...")
+    imageUrl = storage.child(path_on_cloud).get_url(None)
+    doc_ref = db1.collection(u'data').document(u'NDVI')
+    doc_ref.set({
+    u'screenshot': (str(imageUrl))
+    }, merge=True)
+
 
 # 28-11-2020
-data = {"imageUrl": imageUrl}
-db.child("data").child('28-11-2020').child('images').push(data)
-
+#data = {"imageUrl": imageUrl}
+#db.child("data").child('28-11-2020').child('images').push(data)
+##########################################################################################
 
 cv2.namedWindow("preview NDVI")
 vc = cv2.VideoCapture(0)
@@ -73,39 +101,29 @@ while rval:
 
 
     key = cv2.waitKey(1)&0xFF #get a key press
+   
+    #PRESS 'Q' to quit camera 
     if key == ord('q'): #q for quitting
         break
-    elif key == ord('p'): #p for printscreen
-        
-        path = './screenshots'
 
+    #PRESS 'P' to printscreen and upload pic to cloud  
+    elif key == ord('p'):  
+        path = './screenshots'
         curtime = datetime.datetime.now()
         formattedTime = curtime.strftime("%Y%m%d-%H-%M-%S.jpg")
         print ('filename:%s'%formattedTime)
         cv2.imwrite(os.path.join(path,formattedTime),newFrame)
         print ("Screenshot taken!")
+        upload_image(formattedTime)
+
+
+        
 
 # When everything done, release the capture
 vc.release()
 cv2.destroyAllWindows()
 
 
-    #uploading to the cloud 
-# def upload_blob(bucket_name, source_file_name, destination_blob_name):
-#     #"""Uploads a file to the bucket."""
-    
-#     bucket_name = config.storageBucket
-#     source_file_name = "example.jpg"
-#     destination_blob_name = "storage-object-name"
 
-#     storage_client = storage.Client()
-#     bucket = storage_client.bucket(bucket_name)
-#     blob = bucket.blob(destination_blob_name)
 
-#     blob.upload_from_filename(source_file_name) 
 
-#     print(
-#         "File {} uploaded to {}.".format(
-#             source_file_name, destination_blob_name
-#         )
-#     )
