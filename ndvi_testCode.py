@@ -6,7 +6,7 @@ import cv2 #opencv library
 import datetime
 import os
 # import pyrebase
-from ndviFunctions import NDVICalc, DVICalc
+from ndviFunctions import NDVICalc, DVICalc, NIRCalc
 import pyrebase
 import firebase_admin
 from firebase_admin import credentials 
@@ -57,8 +57,8 @@ def upload_image(storage_location):
     #uploading image url from storage to database
     print("adding to database...")
     imageUrl = storage.child(path_on_cloud).get_url(None)
-    doc_ref = db1.collection('data').document('NDVI').collection('images').add({
-    'screenshot': (str(imageUrl))
+    doc_ref = db1.collection('data').document('25-11-2020').collection('images').add({
+    'imageUrl': (str(imageUrl))
 
     })
 
@@ -88,15 +88,19 @@ else:
     rval = False
 
 while rval:
+
+    #nirImage = NIRCalc(frame)
     ndviImage = NDVICalc(frame)
     #dviImage = DVICalc(frame)
 
     cv2.putText(frame, "Raw Image", (x,y), font, font_size, text_color, thickness, lineType=cv2.LINE_AA)
     cv2.putText(ndviImage, "NDVI Image", (x,y), font, font_size, text_color, thickness, lineType=cv2.LINE_AA)
     #cv2.putText(dviImage, "DVI Image", (x,y), font, font_size, text_color, thickness, lineType=cv2.LINE_AA)
+    #cv2.putText(nirImage, "NIR Image", (x,y), font, font_size, text_color, thickness, lineType=cv2.LINE_AA)
 
     #newFrame = np.concatenate((ndviImage,dviImage,frame),axis=1)
     newFrame = np.concatenate((ndviImage,frame),axis=1)
+    # newFrame = np.concatenate((nirImage,frame),axis=1)
     cv2.imshow("preview NDVI", newFrame)
 
     rval, frame = vc.read()
@@ -117,6 +121,16 @@ while rval:
         cv2.imwrite(os.path.join(path,formattedTime),newFrame)
         print ("Screenshot taken!")
         upload_image(formattedTime)
+
+    #TESTING 
+    #PRESS 't' to printscreen and save img in the folder   
+    elif key == ord('t'):  
+        path = './screenshots'
+        curtime = datetime.datetime.now()
+        formattedTime = curtime.strftime("%Y%m%d-%H-%M-%S.jpg")
+        print ('filename:%s'%formattedTime)
+        cv2.imwrite(os.path.join(path,formattedTime),newFrame)
+
 
 
         
